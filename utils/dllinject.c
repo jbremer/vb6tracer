@@ -16,6 +16,12 @@ int main(int argc, char *argv[])
         return 1;
     }
 
+    OFSTRUCT of; memset(&of, 0, sizeof(of)); of.cBytes = sizeof(of);
+    if(OpenFile(argv[1], &of, OF_EXIST) == HFILE_ERROR) {
+        fprintf(stderr, "Dll file does not exist!\n");
+        return 1;
+    }
+
     STARTUPINFO si; PROCESS_INFORMATION pi;
     memset(&si, 0, sizeof(si));
     si.cb = sizeof(si);
