@@ -152,3 +152,47 @@ int vb6_hook_ins(const char *mnemonic, vb6_hook_pre_t pre)
     ret += _vb6_hooks_ins(mnemonic, pre, vb6_table_ff, 5);
     return ret;
 }
+
+static void _vb6_set_generic_pre_hook(uint8_t *orig, uint8_t *hook,
+    vb6_hook_generic_pre_t gpre)
+{
+    // pushad
+    *hook++ = 0x60;
+
+    // lea ebx, [esp+32]
+    *hook++ = 0x8d; *hook++ = 0x5c; *hook++ = 0xe4; *hook++ = 0x20;
+
+    // push esi ; push ebp ; push esp ; push eax
+    *hook++ = 0x56;
+    *hook++ = 0x55;
+    *hook++ = 0x53;
+    *hook++ = 0x50;
+
+    // call generic-pre
+    *hook++ = 0xe8;
+    *(uint32_t *) hook = (uint8_t *) gpre - hook - 4;
+    hook += 4;
+
+    // add esp, 16
+    *hook++ = 0x83; *hook++ = 0xc4; *hook++ = 0x10;
+
+    // popad
+    *hook++ = 0x61;
+
+    // jmp orig_handler
+    *hook++ = 0xe9;
+    *(uint32_t *) hook = orig - hook - 4;
+}
+
+int vb6_hook_generic_table00(vb6_hook_generic_pre_t pre)
+{
+    for (uint32_t idx = 0; idx < 0x100; idx++) {
+        if(vb6_table_00[idx].mnemonic == NULL) continue;
+
+        _vb6_set_generic_pre_hook(g_table_orig[0][idx],
+            g_hook_data[0][idx], pre);
+
+        g_table_00[idx] = g_hook_data[0][idx];
+    }
+    return 0;
+}
