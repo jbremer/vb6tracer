@@ -22,11 +22,39 @@ int main(int argc, char *argv[])
         return 1;
     }
 
+    SECURITY_ATTRIBUTES sa;
+    sa.nLength = sizeof(SECURITY_ATTRIBUTES);
+    sa.bInheritHandle = TRUE;
+    sa.lpSecurityDescriptor = NULL;
+
+    char fname[MAX_PATH];
+    sprintf(fname, "%d-out.txt", GetCurrentProcessId());
+
+    HANDLE out_file = CreateFile(fname, GENERIC_WRITE, 0, &sa,
+        CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
+    if(out_file == INVALID_HANDLE_VALUE) {
+        fprintf(stderr, "Unable to create stdout file: %d (%s)!\n",
+            GetLastError(), fname);
+        return 1;
+    }
+
+    sprintf(fname, "%d-err.txt", GetCurrentProcessId());
+    HANDLE err_file = CreateFile(fname, GENERIC_WRITE, 0, &sa,
+        CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
+    if(err_file == INVALID_HANDLE_VALUE) {
+        fprintf(stderr, "Unable to create stderr file: %d (%s)!\n",
+            GetLastError(), fname);
+        return 1;
+    }
+
     STARTUPINFO si; PROCESS_INFORMATION pi;
     memset(&si, 0, sizeof(si));
     si.cb = sizeof(si);
+    si.dwFlags = STARTF_USESTDHANDLES;
+    si.hStdOutput = out_file;
+    si.hStdError = err_file;
 
-    if(CreateProcessA(argv[2], argv[2], NULL, NULL, FALSE, CREATE_SUSPENDED,
+    if(CreateProcessA(argv[2], argv[2], NULL, NULL, TRUE, CREATE_SUSPENDED,
             NULL, NULL, &si, &pi) == FALSE) {
         fprintf(stderr, "Error launching process: %d!\n", GetLastError());
         return 1;
