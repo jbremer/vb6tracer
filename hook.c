@@ -17,6 +17,11 @@ static uint8_t **g_table_fd;
 static uint8_t **g_table_fe;
 static uint8_t **g_table_ff;
 
+static uint8_t ***g_tables[] = {
+    &g_table_00, &g_table_fb, &g_table_fc,
+    &g_table_fd, &g_table_fe, &g_table_ff,
+};
+
 // original vm lookup tables
 static uint8_t *g_table_orig[6][256];
 
@@ -48,10 +53,6 @@ static int _vb6_locate_vm_tables(void *vb6_handle)
     VirtualProtect(g_table_00, 256 * sizeof(uint8_t *),
         PAGE_EXECUTE_READWRITE, &old_protection);
 
-    static uint8_t ***tables[] = {
-        &g_table_fb, &g_table_fc, &g_table_fd, &g_table_fe, &g_table_ff,
-    };
-
     // now we get the 2-byte lookup tables
     for (uint32_t idx = 0xfb; idx < 0x100; idx++) {
         // resolve address for this index
@@ -61,17 +62,17 @@ static int _vb6_locate_vm_tables(void *vb6_handle)
         for (; *ptr != 0xff || ptr[1] != 0x24; ptr++);
 
         // initialize the address of the correct 2-byte lookup table
-        *tables[idx - 0xfb] = *(uint8_t ***)(ptr + 3);
+        *g_tables[1 + idx - 0xfb] = *(uint8_t ***)(ptr + 3);
 
         // copy the original vm lookup table
-        memcpy(g_table_orig[1 + idx - 0xfb], *tables[idx - 0xfb],
+        memcpy(g_table_orig[1 + idx - 0xfb], *g_tables[1 + idx - 0xfb],
             256 * sizeof(uint8_t *));
 
         // mark as RWX - just like we did for g_table_00
-        VirtualProtect(*tables[idx - 0xfb], 256 * sizeof(uint8_t *),
+        VirtualProtect(*g_tables[1 + idx - 0xfb], 256 * sizeof(uint8_t *),
             PAGE_EXECUTE_READWRITE, &old_protection);
 
-        printf("[+] table_%02x: 0x%p\n", idx, *tables[idx - 0xfb]);
+        printf("[+] table_%02x: 0x%p\n", idx, *g_tables[1 + idx - 0xfb]);
     }
     return 0;
 }
@@ -112,7 +113,7 @@ static void _vb6_set_pre_hook(uint8_t *orig, uint8_t *hook,
 }
 
 static int _vb6_hooks_ins(const char *mnemonic, vb6_hook_pre_t pre,
-    vb6_insns_t *table, uint8_t **lut, uint32_t table_index)
+    vb6_insns_t *table, uint32_t table_index)
 {
     int ret = 0;
     for (uint32_t idx = 0; idx < 256; idx++, table++) {
@@ -122,6 +123,8 @@ static int _vb6_hooks_ins(const char *mnemonic, vb6_hook_pre_t pre,
 
             _vb6_set_pre_hook(g_table_orig[table_index][idx],
                 &g_hook_data[table_index][idx], pre);
+
+            uint8_t **lut = *g_tables[table_index];
 
             // now patch the vm lookup handler entry
             printf("[+] Patching 0x%p (0x%p) to 0x%p\n", &lut[idx], lut[idx],
@@ -138,11 +141,11 @@ static int _vb6_hooks_ins(const char *mnemonic, vb6_hook_pre_t pre,
 int vb6_hook_ins(const char *mnemonic, vb6_hook_pre_t pre)
 {
     int ret = 0;
-    ret += _vb6_hooks_ins(mnemonic, pre, vb6_table_00, g_table_00, 0);
-    ret += _vb6_hooks_ins(mnemonic, pre, vb6_table_fb, g_table_fb, 1);
-    ret += _vb6_hooks_ins(mnemonic, pre, vb6_table_fc, g_table_fc, 2);
-    ret += _vb6_hooks_ins(mnemonic, pre, vb6_table_fd, g_table_fd, 3);
-    ret += _vb6_hooks_ins(mnemonic, pre, vb6_table_fe, g_table_fe, 4);
-    ret += _vb6_hooks_ins(mnemonic, pre, vb6_table_ff, g_table_ff, 5);
+    ret += _vb6_hooks_ins(mnemonic, pre, vb6_table_00, 0);
+    ret += _vb6_hooks_ins(mnemonic, pre, vb6_table_fb, 1);
+    ret += _vb6_hooks_ins(mnemonic, pre, vb6_table_fc, 2);
+    ret += _vb6_hooks_ins(mnemonic, pre, vb6_table_fd, 3);
+    ret += _vb6_hooks_ins(mnemonic, pre, vb6_table_fe, 4);
+    ret += _vb6_hooks_ins(mnemonic, pre, vb6_table_ff, 5);
     return ret;
 }
