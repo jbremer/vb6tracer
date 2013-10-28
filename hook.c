@@ -7,7 +7,7 @@
 #include "vb6_tables.h"
 
 // hook data for redirecting certain hooks, there are 6 tables of 256 entries
-static uint8_t g_hook_data[6][256 * 32];
+static uint8_t g_hook_data[6][256][32];
 
 // vb6 vm lookup table pointers
 static uint8_t **g_table_00;
@@ -79,6 +79,9 @@ static int _vb6_locate_vm_tables(void *vb6_handle)
 
 int vb6_hook_init(void *vb6_handle)
 {
+    // int3 all the bytes
+    memset(g_hook_data, 0xcc, sizeof(g_hook_data));
+
     return _vb6_locate_vm_tables(vb6_handle);
 }
 
@@ -122,15 +125,15 @@ static int _vb6_hooks_ins(const char *mnemonic, vb6_hook_pre_t pre,
                 mnemonic, table_index, idx, pre);
 
             _vb6_set_pre_hook(g_table_orig[table_index][idx],
-                &g_hook_data[table_index][idx], pre);
+                g_hook_data[table_index][idx], pre);
 
             uint8_t **lut = *g_tables[table_index];
 
             // now patch the vm lookup handler entry
             printf("[+] Patching 0x%p (0x%p) to 0x%p\n", &lut[idx], lut[idx],
-                &g_hook_data[table_index][idx]);
+                g_hook_data[table_index][idx]);
 
-            lut[idx] = &g_hook_data[table_index][idx];
+            lut[idx] = g_hook_data[table_index][idx];
 
             ret++;
         }
