@@ -3,8 +3,8 @@
 
 int main(int argc, char *argv[])
 {
-    if(argc != 3) {
-        printf("Usage: %s <dll> <app> [args..]\n", argv[0]);
+    if(argc < 3) {
+        printf("Usage: %s <dll> <app> [dbg]\n", argv[0]);
         printf("(args currently not supported!)\n");
         return 1;
     }
@@ -85,6 +85,20 @@ int main(int argc, char *argv[])
     }
 
     printf("[x] Injected successfully!\n");
+
+    if(argc > 3) {
+        sprintf(fname, "\"%s\" -p %d", argv[3], pi.dwProcessId);
+
+        STARTUPINFO si2; PROCESS_INFORMATION pi2;
+        memset(&si2, 0, sizeof(si2)); si2.cb = sizeof(si2);
+        CreateProcess(argv[3], fname, NULL, NULL, FALSE, 0,
+            NULL, NULL, &si2, &pi2);
+
+        CloseHandle(pi2.hThread);
+        CloseHandle(pi2.hProcess);
+
+        Sleep(5000);
+    }
 
     ResumeThread(pi.hThread);
     CloseHandle(pi.hThread);
