@@ -28,21 +28,21 @@ int main(int argc, char *argv[])
     sa.lpSecurityDescriptor = NULL;
 
     char fname[MAX_PATH];
-    sprintf(fname, "%d-out.txt", GetCurrentProcessId());
+    sprintf(fname, "%ld-out.txt", GetCurrentProcessId());
 
     HANDLE out_file = CreateFile(fname, GENERIC_WRITE, 0, &sa,
         CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
     if(out_file == INVALID_HANDLE_VALUE) {
-        fprintf(stderr, "Unable to create stdout file: %d (%s)!\n",
+        fprintf(stderr, "Unable to create stdout file: %ld (%s)!\n",
             GetLastError(), fname);
         return 1;
     }
 
-    sprintf(fname, "%d-err.txt", GetCurrentProcessId());
+    sprintf(fname, "%ld-err.txt", GetCurrentProcessId());
     HANDLE err_file = CreateFile(fname, GENERIC_WRITE, 0, &sa,
         CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
     if(err_file == INVALID_HANDLE_VALUE) {
-        fprintf(stderr, "Unable to create stderr file: %d (%s)!\n",
+        fprintf(stderr, "Unable to create stderr file: %ld (%s)!\n",
             GetLastError(), fname);
         return 1;
     }
@@ -56,14 +56,14 @@ int main(int argc, char *argv[])
 
     if(CreateProcessA(argv[2], argv[2], NULL, NULL, TRUE, CREATE_SUSPENDED,
             NULL, NULL, &si, &pi) == FALSE) {
-        fprintf(stderr, "Error launching process: %d!\n", GetLastError());
+        fprintf(stderr, "Error launching process: %ld!\n", GetLastError());
         return 1;
     }
 
     void *lib = VirtualAllocEx(pi.hProcess, NULL, strlen(argv[1]) + 1,
         MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);
     if(lib == NULL) {
-        fprintf(stderr, "Error allocating memory in the process: %d!\n",
+        fprintf(stderr, "Error allocating memory in the process: %ld!\n",
             GetLastError());
         goto error;
     }
@@ -72,14 +72,14 @@ int main(int argc, char *argv[])
     if(WriteProcessMemory(pi.hProcess, lib, argv[1], strlen(argv[1]) + 1,
             &bytes_written) == FALSE ||
             bytes_written != strlen(argv[1]) + 1) {
-        fprintf(stderr, "Error writing lib to the process: %d\n",
+        fprintf(stderr, "Error writing lib to the process: %ld\n",
             GetLastError());
         goto error;
     }
 
     if(QueueUserAPC((PAPCFUNC) load_library_a, pi.hThread,
             (ULONG_PTR) lib) == 0) {
-        fprintf(stderr, "Error queueing APC to the process: %d\n",
+        fprintf(stderr, "Error queueing APC to the process: %ld\n",
             GetLastError());
         goto error;
     }
@@ -87,7 +87,7 @@ int main(int argc, char *argv[])
     printf("[x] Injected successfully!\n");
 
     if(argc > 3) {
-        sprintf(fname, "\"%s\" -p %d", argv[3], pi.dwProcessId);
+        sprintf(fname, "\"%s\" -p %ld", argv[3], pi.dwProcessId);
 
         STARTUPINFO si2; PROCESS_INFORMATION pi2;
         memset(&si2, 0, sizeof(si2)); si2.cb = sizeof(si2);
