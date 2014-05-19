@@ -37,6 +37,10 @@ static int _report_utf8x(char **out, uint16_t x)
 
 static int _report_ascii(char **out, const char *s, int len)
 {
+    if(len == 0) {
+        return _report_ascii(out, "<empty>", 7);
+    }
+
     int ret = 0;
     while (len-- != 0) {
         ret += _report_utf8x(out, *(unsigned char *) s++);
@@ -46,6 +50,10 @@ static int _report_ascii(char **out, const char *s, int len)
 
 static int _report_unicode(char **out, const wchar_t *s, int len)
 {
+    if(len == 0) {
+        return _report_ascii(out, "<empty>", 7);
+    }
+
     int ret = 0;
     while (len-- != 0) {
         ret += _report_utf8x(out, *(unsigned short *) s++);
@@ -62,7 +70,8 @@ static int _report_variant(char **out, const VARIANT *v)
 
 static int _report_sprintf(char *out, const char *fmt, va_list args)
 {
-    int ret = 0, len; char buf[32]; const char *s; const wchar_t *w;
+    int ret = 0, len; char buf[32];
+    const char *s; const wchar_t *w; const VARIANT *v;
     while (*fmt != 0) {
         if(*fmt != '%') {
             ret += _report_utf8x(&out, *fmt++);
@@ -71,14 +80,20 @@ static int _report_sprintf(char *out, const char *fmt, va_list args)
         switch (*++fmt) {
         case 'z':
             s = va_arg(args, const char *);
-            if(s == NULL) return -1;
+            if(s == NULL) {
+                ret += _report_ascii(&out, "<null>", 6);
+                break;
+            }
 
             ret += _report_ascii(&out, s, strlen(s));
             break;
 
         case 'Z':
             w = va_arg(args, const wchar_t *);
-            if(w == NULL) return -1;
+            if(w == NULL) {
+                ret += _report_ascii(&out, "<null>", 6);
+                break;
+            }
 
             ret += _report_unicode(&out, w, lstrlenW(w));
             break;
@@ -86,7 +101,10 @@ static int _report_sprintf(char *out, const char *fmt, va_list args)
         case 's':
             len = va_arg(args, int);
             s = va_arg(args, const char *);
-            if(s == NULL) return -1;
+            if(s == NULL) {
+                ret += _report_ascii(&out, "<null>", 6);
+                break;
+            }
 
             ret += _report_ascii(&out, s, len);
             break;
@@ -94,7 +112,10 @@ static int _report_sprintf(char *out, const char *fmt, va_list args)
         case 'S':
             len = va_arg(args, int);
             w = va_arg(args, const wchar_t *);
-            if(w == NULL) return -1;
+            if(w == NULL) {
+                ret += _report_ascii(&out, "<null>", 6);
+                break;
+            }
 
             ret += _report_unicode(&out, w, len);
             break;
@@ -116,12 +137,23 @@ static int _report_sprintf(char *out, const char *fmt, va_list args)
 
         case 'b':
             w = va_arg(args, wchar_t *);
+            if(w == NULL) {
+                ret += _report_ascii(&out, "<null>", 6);
+                break;
+            }
+
             len = *(int *)((uint8_t *) w - sizeof(int));
-            ret += _report_unicode(&out, w, len);
+            ret += _report_unicode(&out, w, len >> 1);
             break;
 
         case 'v':
-            ret += _report_variant(&out, va_arg(args, const VARIANT *));
+            v = va_arg(args, const VARIANT *);
+            if(v == NULL) {
+                ret += _report_ascii(&out, "<null>", 6);
+                break;
+            }
+
+            ret += _report_variant(&out, v);
             break;
         }
         fmt++;
