@@ -63,8 +63,52 @@ static int _report_unicode(char **out, const wchar_t *s, int len)
 
 static int _report_variant(char **out, const VARIANT *v)
 {
-    (void) out; (void) v;
-    // TODO
+    char buf[32]; int len;
+    switch (v->vt) {
+    case VT_NULL:
+        return _report_ascii(out, "<null>", 6);
+
+    case VT_BOOL:
+        if(v->boolVal != 0) {
+            return _report_ascii(out, "True", 4);
+        }
+
+        return _report_ascii(out, "False", 5);
+
+    case VT_I1: case VT_UI1:
+        return _report_ascii(out, buf, sprintf(buf, "%u", v->bVal));
+
+    case VT_I2: case VT_UI2:
+        return _report_ascii(out, buf, sprintf(buf, "%u", v->iVal));
+
+    case VT_I4: case VT_UI4: case VT_INT: case VT_UINT:
+        return _report_ascii(out, buf, sprintf(buf, "%u", v->intVal));
+
+    case VT_I8: case VT_UI8:
+        return _report_ascii(out, buf, sprintf(buf, "%llu", v->llVal));
+
+    case VT_LPSTR:
+        if(v->pcVal == NULL) return _report_ascii(out, "<null>", 6);
+        return _report_ascii(out, v->pcVal, strlen(v->pcVal));
+
+    case VT_LPWSTR:
+        if(v->pbVal == NULL) return _report_ascii(out, "<null>", 6);
+        return _report_unicode(out, (const wchar_t *) v->pbVal,
+                lstrlenW((const wchar_t *) v->pcVal));
+
+    case VT_BSTR:
+        if(v->bstrVal == NULL) return _report_ascii(out, "<null>", 6);
+
+        len = *(int *)((uint8_t *) v->bstrVal - sizeof(int));
+        return _report_unicode(out, v->bstrVal, len);
+
+    case VT_VARIANT:
+        return _report_variant(out, v->pvarVal);
+
+    default:
+        sprintf(buf, "<VT_%d>", v->vt);
+        return _report_ascii(out, buf, strlen(buf));
+    }
     return 0;
 }
 
