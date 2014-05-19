@@ -106,7 +106,7 @@ static int _report_sprintf(char *out, const char *fmt, va_list args)
         }
         else if(*fmt == 'x') {
             char s[16];
-            sprintf(s, "%x", va_arg(args, int));
+            sprintf(s, "%08x", va_arg(args, int));
             ret += _report_ascii(&out, s, strlen(s));
         }
         else if(*fmt == 'b') {
