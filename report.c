@@ -62,60 +62,67 @@ static int _report_variant(char **out, const VARIANT *v)
 
 static int _report_sprintf(char *out, const char *fmt, va_list args)
 {
-    int ret = 0;
+    int ret = 0, len; char buf[32]; const char *s; const wchar_t *w;
     while (*fmt != 0) {
         if(*fmt != '%') {
             ret += _report_utf8x(&out, *fmt++);
             continue;
         }
-        if(*++fmt == 'z') {
-            const char *s = va_arg(args, const char *);
+        switch (*++fmt) {
+        case 'z':
+            s = va_arg(args, const char *);
             if(s == NULL) return -1;
 
             ret += _report_ascii(&out, s, strlen(s));
-        }
-        else if(*fmt == 'Z') {
-            const wchar_t *s = va_arg(args, const wchar_t *);
-            if(s == NULL) return -1;
+            break;
 
-            ret += _report_unicode(&out, s, lstrlenW(s));
-        }
-        else if(*fmt == 's') {
-            int len = va_arg(args, int);
-            const char *s = va_arg(args, const char *);
+        case 'Z':
+            w = va_arg(args, const wchar_t *);
+            if(w == NULL) return -1;
+
+            ret += _report_unicode(&out, w, lstrlenW(w));
+            break;
+
+        case 's':
+            len = va_arg(args, int);
+            s = va_arg(args, const char *);
             if(s == NULL) return -1;
 
             ret += _report_ascii(&out, s, len);
-        }
-        else if(*fmt == 'S') {
-            int len = va_arg(args, int);
-            const wchar_t *s = va_arg(args, const wchar_t *);
-            if(s == NULL) return -1;
+            break;
 
-            ret += _report_unicode(&out, s, len);
-        }
-        else if(*fmt == 'd') {
-            char s[32];
-            sprintf(s, "%d", va_arg(args, int));
-            ret += _report_ascii(&out, s, strlen(s));
-        }
-        else if(*fmt == 'u') {
-            char s[32];
-            sprintf(s, "%u", va_arg(args, int));
-            ret += _report_ascii(&out, s, strlen(s));
-        }
-        else if(*fmt == 'x') {
-            char s[16];
-            sprintf(s, "%08x", va_arg(args, int));
-            ret += _report_ascii(&out, s, strlen(s));
-        }
-        else if(*fmt == 'b') {
-            wchar_t *s = va_arg(args, wchar_t *);
-            uint32_t len = *(uint32_t *)((uint8_t *) s - sizeof(uint32_t));
-            ret += _report_unicode(&out, s, len);
-        }
-        else if(*fmt == 'v') {
-            ret += _report_variant(&out, va_arg(args, VARIANT *));
+        case 'S':
+            len = va_arg(args, int);
+            w = va_arg(args, const wchar_t *);
+            if(w == NULL) return -1;
+
+            ret += _report_unicode(&out, w, len);
+            break;
+
+        case 'd':
+            sprintf(buf, "%d", va_arg(args, int));
+            ret += _report_ascii(&out, buf, strlen(buf));
+            break;
+
+        case 'u':
+            sprintf(buf, "%u", va_arg(args, int));
+            ret += _report_ascii(&out, buf, strlen(buf));
+            break;
+
+        case 'x':
+            sprintf(buf, "%08x", va_arg(args, int));
+            ret += _report_ascii(&out, buf, strlen(buf));
+            break;
+
+        case 'b':
+            w = va_arg(args, wchar_t *);
+            len = *(int *)((uint8_t *) w - sizeof(int));
+            ret += _report_unicode(&out, w, len);
+            break;
+
+        case 'v':
+            ret += _report_variant(&out, va_arg(args, const VARIANT *));
+            break;
         }
         fmt++;
     }
