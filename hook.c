@@ -2,9 +2,7 @@
 #include <stdint.h>
 #include <string.h>
 #include <windows.h>
-#include "hook.h"
-#include "disasm.h"
-#include "vb6_tables.h"
+#include "vb6.h"
 
 // hook data for redirecting certain hooks, there are 6 tables of 256 entries
 static uint8_t g_hook_data[6][256][32];

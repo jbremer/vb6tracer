@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <windows.h>
-#include "hook.h"
+#include "vb6.h"
 
 // address of msvbvm60.dll
 static void *g_vb6;

@@ -1,4 +1,5 @@
-#include "vb6_tables.h"
+#include "vb6.h"
+
 vb6_insns_t vb6_table_00[256] = {
     [0] = {2, "LargeBos"},
     [1] = {5, "InvalidExcode"},

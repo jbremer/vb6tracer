@@ -1,7 +1,6 @@
 #include <stdio.h>
 #include <stdint.h>
-#include "vb6_tables.h"
-#include "disasm.h"
+#include "vb6.h"
 
 int32_t vb6_disasm(vb6_ins_t *i, const uint8_t *raw)
 {
