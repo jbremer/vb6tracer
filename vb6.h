@@ -47,4 +47,21 @@ void spawn_debugger();
 
 int vb6_set_hooks();
 
+// report.c
+
+int report_init(const char *path);
+void report_close();
+
+// Modifiers:
+// z, zero-terminated ascii string
+// Z, zero-terminated unicode string
+// s, ascii string with length
+// S, unicode string with length
+// d, 32-bit signed integer
+// u, 32-bit unsigned integer
+// x, 32-bit hex value
+// b, bstr object
+// v, variant object
+void report(const char *fmt, ...);
+
 #endif
