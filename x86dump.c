@@ -42,8 +42,11 @@ static const char *_exported_function(const uint8_t *addr)
     uint32_t *names_addresses = (uint32_t *)(
         mod + export_directory->AddressOfNames);
 
+    uint16_t *ordinals = (uint16_t *)(
+        mod + export_directory->AddressOfNameOrdinals);
+
     for (uint32_t i = 0; i < export_directory->NumberOfNames; i++) {
-        if(mod + function_addresses[i] == addr) {
+        if(mod + function_addresses[ordinals[i]] == addr) {
             name[len++] = '!';
             strncpy(&name[len], (const char *) mod + names_addresses[i],
                 sizeof(name) - len);
