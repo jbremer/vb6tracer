@@ -85,7 +85,7 @@ static int _report_variant(char **out, const VARIANT *v)
         return _report_ascii(out, buf, sprintf(buf, "%u", v->intVal));
 
     case VT_I8: case VT_UI8:
-        return _report_ascii(out, buf, sprintf(buf, "%llu", v->llVal));
+        return _report_ascii(out, buf, sprintf(buf, "%I64u", v->llVal));
 
     case VT_LPSTR:
         if(v->pcVal == NULL) return _report_ascii(out, "<null>", 6);

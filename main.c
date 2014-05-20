@@ -53,6 +53,7 @@ BOOL APIENTRY DllMain(HANDLE hModule, DWORD dwReason, LPVOID lpReserved)
 
         if(vb6_hook_init(g_vb6) == 0) {
             vb6_hook_generic_table00(&_generic_pre);
+            vb6_set_hooks();
         }
     }
     return TRUE;

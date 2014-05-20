@@ -29,7 +29,7 @@ int32_t vb6_disasm(vb6_ins_t *i, const uint8_t *raw);
 // hook.c
 
 // for now just pre-hooks
-typedef int (*vb6_hook_pre_t)(uint32_t *esp, uint32_t *ebp, uint32_t *esi);
+typedef void (*vb6_hook_pre_t)(uint32_t *esp, uint32_t *ebp, uint32_t *esi);
 typedef int (*vb6_hook_generic_pre_t)(uint32_t eax, uint32_t *esp,
     uint32_t *ebp, uint32_t *esi);
 
