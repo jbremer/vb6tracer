@@ -35,28 +35,70 @@ static int _report_utf8x(char **out, uint16_t x)
     return len;
 }
 
-static int _report_ascii(char **out, const char *s, int len)
+static int _report_character(char **out, uint16_t ch, int quoted)
+{
+    if(quoted == 0) {
+        return _report_utf8x(out, ch);
+    }
+
+    switch (ch) {
+    case '\t':
+        return _report_utf8x(out, '\\') + _report_utf8x(out, 't');
+
+    case '\r':
+        return _report_utf8x(out, '\\') + _report_utf8x(out, 'r');
+
+    case '\n':
+        return _report_utf8x(out, '\\') + _report_utf8x(out, 'n');
+
+    case '"':
+        return _report_utf8x(out, '\\') + _report_utf8x(out, '"');
+
+    default:
+        return _report_utf8x(out, ch);
+    }
+}
+
+static int _report_ascii(char **out, const char *s, int len, int quoted)
 {
     if(len == 0) {
-        return _report_ascii(out, "<empty>", 7);
+        return _report_ascii(out, "<empty>", 7, 0);
     }
 
     int ret = 0;
+
+    if(quoted != 0) {
+        ret += _report_utf8x(out, '"');
+    }
+
     while (len-- != 0) {
-        ret += _report_utf8x(out, *(unsigned char *) s++);
+        ret += _report_character(out, *s++, quoted);
+    }
+
+    if(quoted != 0) {
+        ret += _report_utf8x(out, '"');
     }
     return ret;
 }
 
-static int _report_unicode(char **out, const wchar_t *s, int len)
+static int _report_unicode(char **out, const wchar_t *s, int len, int quoted)
 {
     if(len == 0) {
-        return _report_ascii(out, "<empty>", 7);
+        return _report_ascii(out, "<empty>", 7, 0);
     }
 
     int ret = 0;
+
+    if(quoted != 0) {
+        ret += _report_utf8x(out, '"');
+    }
+
     while (len-- != 0) {
-        ret += _report_utf8x(out, *(unsigned short *) s++);
+        ret += _report_character(out, *s++, quoted);
+    }
+
+    if(quoted != 0) {
+        ret += _report_utf8x(out, '"');
     }
     return ret;
 }
@@ -66,48 +108,48 @@ static int _report_variant(char **out, const VARIANT *v)
     char buf[32]; int len;
     switch (v->vt) {
     case VT_NULL:
-        return _report_ascii(out, "<null>", 6);
+        return _report_ascii(out, "<null>", 6, 0);
 
     case VT_BOOL:
         if(v->boolVal != 0) {
-            return _report_ascii(out, "True", 4);
+            return _report_ascii(out, "True", 4, 0);
         }
 
-        return _report_ascii(out, "False", 5);
+        return _report_ascii(out, "False", 5, 0);
 
     case VT_I1: case VT_UI1:
-        return _report_ascii(out, buf, sprintf(buf, "%u", v->bVal));
+        return _report_ascii(out, buf, sprintf(buf, "%u", v->bVal), 0);
 
     case VT_I2: case VT_UI2:
-        return _report_ascii(out, buf, sprintf(buf, "%u", v->iVal));
+        return _report_ascii(out, buf, sprintf(buf, "%u", v->iVal), 0);
 
     case VT_I4: case VT_UI4: case VT_INT: case VT_UINT:
-        return _report_ascii(out, buf, sprintf(buf, "%u", v->intVal));
+        return _report_ascii(out, buf, sprintf(buf, "%u", v->intVal), 0);
 
     case VT_I8: case VT_UI8:
-        return _report_ascii(out, buf, sprintf(buf, "%I64u", v->llVal));
+        return _report_ascii(out, buf, sprintf(buf, "%I64u", v->llVal), 0);
 
     case VT_LPSTR:
-        if(v->pcVal == NULL) return _report_ascii(out, "<null>", 6);
-        return _report_ascii(out, v->pcVal, strlen(v->pcVal));
+        if(v->pcVal == NULL) return _report_ascii(out, "<null>", 6, 0);
+        return _report_ascii(out, v->pcVal, strlen(v->pcVal), 1);
 
     case VT_LPWSTR:
-        if(v->pbVal == NULL) return _report_ascii(out, "<null>", 6);
+        if(v->pbVal == NULL) return _report_ascii(out, "<null>", 6, 0);
         return _report_unicode(out, (const wchar_t *) v->pbVal,
-                lstrlenW((const wchar_t *) v->pcVal));
+                lstrlenW((const wchar_t *) v->pcVal), 1);
 
     case VT_BSTR:
-        if(v->bstrVal == NULL) return _report_ascii(out, "<null>", 6);
+        if(v->bstrVal == NULL) return _report_ascii(out, "<null>", 6, 0);
 
         len = *(int *)((uint8_t *) v->bstrVal - sizeof(int));
-        return _report_unicode(out, v->bstrVal, len);
+        return _report_unicode(out, v->bstrVal, len, 1);
 
     case VT_VARIANT:
         return _report_variant(out, v->pvarVal);
 
     default:
         sprintf(buf, "<VT_%d>", v->vt);
-        return _report_ascii(out, buf, strlen(buf));
+        return _report_ascii(out, buf, strlen(buf), 0);
     }
     return 0;
 }
@@ -125,75 +167,75 @@ static int _report_sprintf(char *out, const char *fmt, va_list args)
         case 'z':
             s = va_arg(args, const char *);
             if(s == NULL) {
-                ret += _report_ascii(&out, "<null>", 6);
+                ret += _report_ascii(&out, "<null>", 6, 0);
                 break;
             }
 
-            ret += _report_ascii(&out, s, strlen(s));
+            ret += _report_ascii(&out, s, strlen(s), 0);
             break;
 
         case 'Z':
             w = va_arg(args, const wchar_t *);
             if(w == NULL) {
-                ret += _report_ascii(&out, "<null>", 6);
+                ret += _report_ascii(&out, "<null>", 6, 0);
                 break;
             }
 
-            ret += _report_unicode(&out, w, lstrlenW(w));
+            ret += _report_unicode(&out, w, lstrlenW(w), 0);
             break;
 
         case 's':
             len = va_arg(args, int);
             s = va_arg(args, const char *);
             if(s == NULL) {
-                ret += _report_ascii(&out, "<null>", 6);
+                ret += _report_ascii(&out, "<null>", 6, 0);
                 break;
             }
 
-            ret += _report_ascii(&out, s, len);
+            ret += _report_ascii(&out, s, len, 1);
             break;
 
         case 'S':
             len = va_arg(args, int);
             w = va_arg(args, const wchar_t *);
             if(w == NULL) {
-                ret += _report_ascii(&out, "<null>", 6);
+                ret += _report_ascii(&out, "<null>", 6, 0);
                 break;
             }
 
-            ret += _report_unicode(&out, w, len);
+            ret += _report_unicode(&out, w, len, 1);
             break;
 
         case 'd':
             sprintf(buf, "%d", va_arg(args, int));
-            ret += _report_ascii(&out, buf, strlen(buf));
+            ret += _report_ascii(&out, buf, strlen(buf), 0);
             break;
 
         case 'u':
             sprintf(buf, "%u", va_arg(args, int));
-            ret += _report_ascii(&out, buf, strlen(buf));
+            ret += _report_ascii(&out, buf, strlen(buf), 0);
             break;
 
         case 'x':
             sprintf(buf, "%08x", va_arg(args, int));
-            ret += _report_ascii(&out, buf, strlen(buf));
+            ret += _report_ascii(&out, buf, strlen(buf), 0);
             break;
 
         case 'b':
             w = va_arg(args, wchar_t *);
             if(w == NULL) {
-                ret += _report_ascii(&out, "<null>", 6);
+                ret += _report_ascii(&out, "<null>", 6, 0);
                 break;
             }
 
             len = *(int *)((uint8_t *) w - sizeof(int));
-            ret += _report_unicode(&out, w, len >> 1);
+            ret += _report_unicode(&out, w, len >> 1, 1);
             break;
 
         case 'v':
             v = va_arg(args, const VARIANT *);
             if(v == NULL) {
-                ret += _report_ascii(&out, "<null>", 6);
+                ret += _report_ascii(&out, "<null>", 6, 0);
                 break;
             }
 
