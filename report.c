@@ -238,3 +238,20 @@ void report(const char *fmt, ...)
         fflush(g_fp);
     }
 }
+
+void hexdump(const void *addr, int length, const char *msg)
+{
+    report("[x] Hexdump 0x%x..0x%x: %z",
+        addr, (uintptr_t) addr + length, msg);
+
+    const uint8_t *ptr = (const uint8_t *) addr; char buf[128];
+    for (uint32_t offset = 0; length > 0; offset += 16, length -= 16) {
+        sprintf(buf, "%04x  ", offset);
+        for (int i = 0; i < 16; i++) {
+            sprintf(buf + i * 3 + 6 + (i > 7), "%02x ", *ptr);
+            buf[16 * 3 + 9 + i] = *ptr++;
+        }
+        buf[16 * 4 + 9] = 0;
+        report("%z", buf);
+    }
+}

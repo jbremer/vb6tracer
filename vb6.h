@@ -63,5 +63,6 @@ void report_close();
 // b, bstr object
 // v, variant object
 void report(const char *fmt, ...);
+void hexdump(const void *addr, int length, const char *msg);
 
 #endif

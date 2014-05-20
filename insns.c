@@ -110,6 +110,11 @@ H(XorVar)
     REPORT("XorVar %v %v", esp[0], esp[1]);
 }
 
+H(LitI4)
+{
+    REPORT("LitI4 0x%x %u", esi[0], esi[0]);
+}
+
 #define HOOK(fn) {#fn, _pre_##fn}
 
 static struct _hooks_t {
@@ -135,6 +140,7 @@ static struct _hooks_t {
     HOOK(FStStrCopy),
     HOOK(MemStStrCopy),
     HOOK(XorVar),
+    HOOK(LitI4),
 };
 
 int vb6_set_hooks()
