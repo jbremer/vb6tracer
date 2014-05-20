@@ -4,142 +4,110 @@
 #include <wtypes.h>
 #include "vb6.h"
 
-static void _pre_OpenFile(uint32_t *esp, uint32_t *ebp, uint32_t *esi)
-{
-    (void) ebp; (void) esi;
+#define H(mnemonic) \
+    static void _pre_##mnemonic(uint32_t *esp, uint32_t *ebp, uint32_t *esi)
 
-    report("OpenFile %b", esp[2]);
+#define REPORT(fmt, ...) \
+    (void) esp; (void) ebp; report("%x " fmt, esi, ##__VA_ARGS__)
+
+H(OpenFile)
+{
+    REPORT("OpenFile %b", esp[2]);
 }
 
-static void _pre_FnLenStr(uint32_t *esp, uint32_t *ebp, uint32_t *esi)
+H(FnLenStr)
 {
-    (void) ebp; (void) esi;
-
-    report("FnLenStr %b", esp[0]);
+    REPORT("FnLenStr %b", esp[0]);
 }
 
-static void _pre_ConcatStr(uint32_t *esp, uint32_t *ebp, uint32_t *esi)
+H(ConcatStr)
 {
-    (void) ebp; (void) esi;
-
-    report("ConcatStr %b %b", esp[1], esp[0]);
+    REPORT("ConcatStr %b %b", esp[1], esp[0]);
 }
 
-static void _pre_ConcatVar(uint32_t *esp, uint32_t *ebp, uint32_t *esi)
+H(ConcatVar)
 {
-    (void) ebp; (void) esi;
-
-    report("VarCat %v %v", esp[0], esp[1]);
+    REPORT("VarCat %v %v", esp[0], esp[1]);
 }
 
-static void _pre_FnInStr4(uint32_t *esp, uint32_t *ebp, uint32_t *esi)
+H(FnInStr4)
 {
-    (void) ebp; (void) esi;
-
-    report("FnInStr4 %Z %Z %u", esp[1], esp[2], esp[3]);
+    REPORT("FnInStr4 %Z %Z %u", esp[1], esp[2], esp[3]);
 }
 
-static void _pre_FnInStr4Var(uint32_t *esp, uint32_t *ebp, uint32_t *esi)
+H(FnInStr4Var)
 {
-    (void) ebp; (void) esi;
-
-    report("FnInStr4Var %v %v", esp[1], esp[2]);
+    REPORT("FnInStr4Var %v %v", esp[1], esp[2]);
 }
 
-static void _pre_CStr2Ansi(uint32_t *esp, uint32_t *ebp, uint32_t *esi)
+H(CStr2Ansi)
 {
-    (void) ebp; (void) esi;
-
-    report("CStr2Ansi %b", esp[1]);
+    REPORT("CStr2Ansi %b", esp[1]);
 }
 
-static void _pre_CVarStr(uint32_t *esp, uint32_t *ebp, uint32_t *esi)
+H(CVarStr)
 {
-    (void) ebp; (void) esi;
-
-    report("CVarStr %b", esp[0]);
+    REPORT("CVarStr %b", esp[0]);
 }
 
-static void _pre_CStr2Uni(uint32_t *esp, uint32_t *ebp, uint32_t *esi)
+H(CStr2Uni)
 {
-    (void) ebp; (void) esi;
-
     if(esp[1] != 0) {
-        report("CStr2Uni %s", *(uint32_t *)(esp[1] - 4), esp[1]);
+        REPORT("CStr2Uni %s", *(uint32_t *)(esp[1] - 4), esp[1]);
     }
 }
 
-static void _pre_EqStr(uint32_t *esp, uint32_t *ebp, uint32_t *esi)
+H(EqStr)
 {
-    (void) ebp; (void) esi;
-
-    report("EqStr %b %b", esp[0], esp[1]);
+    REPORT("EqStr %b %b", esp[0], esp[1]);
 }
 
-static void _pre_NeStr(uint32_t *esp, uint32_t *ebp, uint32_t *esi)
+H(NeStr)
 {
-    (void) ebp; (void) esi;
-
-    report("NeStr %b %b", esp[0], esp[1]);
+    REPORT("NeStr %b %b", esp[0], esp[1]);
 }
 
-static void _pre_LitStr(uint32_t *esp, uint32_t *ebp, uint32_t *esi)
+H(LitStr)
 {
-    (void) esp;
-
     const wchar_t *s =
         *(const wchar_t **)(ebp[-0x54/4] + *(uint16_t *) esi * 4);
-    report("LitStr %b", s);
+    REPORT("LitStr %b", s);
 }
 
-static void _pre_MemLdStr(uint32_t *esp, uint32_t *ebp, uint32_t *esi)
+H(MemLdStr)
 {
-    (void) esp;
-
     const wchar_t *s = *(const wchar_t **)(ebp[-0x4c/4] + *(uint16_t *) esi);
-    report("MemLdStr %b", s);
+    REPORT("MemLdStr %b", s);
 }
 
-static void _pre_IStStr(uint32_t *esp, uint32_t *ebp, uint32_t *esi)
+H(IStStr)
 {
-    (void) ebp; (void) esi;
-
-    report("IStStr %b", esp[0]);
+    REPORT("IStStr %b", esp[0]);
 }
 
-static void _pre_FStStr(uint32_t *esp, uint32_t *ebp, uint32_t *esi)
+H(FStStr)
 {
-    (void) ebp; (void) esi;
-
-    report("FStStr %b", esp[0]);
+    REPORT("FStStr %b", esp[0]);
 }
 
-static void _pre_FMemStStr(uint32_t *esp, uint32_t *ebp, uint32_t *esi)
+H(FMemStStr)
 {
-    (void) ebp; (void) esi;
-
-    report("FMemStStr %b", esp[0]);
+    REPORT("FMemStStr %b", esp[0]);
 }
 
-static void _pre_FStStrCopy(uint32_t *esp, uint32_t *ebp, uint32_t *esi)
+H(FStStrCopy)
 {
-    (void) ebp; (void) esi;
-
-    report("FStSTrCopy %b", esp[0]);
+    REPORT("FStSTrCopy %b", esp[0]);
 }
 
-static void _pre_MemStStrCopy(uint32_t *esp, uint32_t *ebp, uint32_t *esi)
+H(MemStStrCopy)
 {
-    (void) ebp; (void) esi;
-
-    report("MemStStrCopy %b", esp[0]);
+    REPORT("MemStStrCopy %b", esp[0]);
 }
 
-static void _pre_XorVar(uint32_t *esp, uint32_t *ebp, uint32_t *esi)
+H(XorVar)
 {
-    (void) ebp; (void) esi;
-
-    report("XorVar %v %v", esp[0], esp[1]);
+    REPORT("XorVar %v %v", esp[0], esp[1]);
 }
 
 #define HOOK(fn) {#fn, _pre_##fn}
