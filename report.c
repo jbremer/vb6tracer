@@ -202,7 +202,7 @@ static int _report_sprintf(char *out, const char *fmt, va_list args)
         }
         fmt++;
     }
-    _report_utf8x(&out, '\n');
+    ret += _report_utf8x(&out, '\n');
     return ret;
 }
 
