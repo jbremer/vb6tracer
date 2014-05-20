@@ -65,4 +65,8 @@ void report_close();
 void report(const char *fmt, ...);
 void hexdump(const void *addr, int length, const char *msg);
 
+// x86dump.c
+
+void x86dump(const uint8_t *addr, const char *msg);
+
 #endif

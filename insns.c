@@ -30,6 +30,24 @@ H(ConcatVar)
     REPORT("VarCat %v %v", esp[0], esp[1]);
 }
 
+H(ImpAdCallFPR4)
+{
+    uint8_t *fn = *(uint8_t **)(ebp[-0x54/4] + *(uint16_t *) esi * 4);
+    REPORT("ImpAdCallI2 fn 0x%x", fn);
+    if(fn != NULL) {
+        x86dump(fn, "ImpAdCallFPR4");
+    }
+}
+
+H(ImpAdCallI2)
+{
+    uint8_t *fn = *(uint8_t **)(ebp[-0x54/4] + *(uint16_t *) esi * 4);
+    REPORT("ImpAdCallI2 fn 0x%x", fn);
+    if(fn != NULL) {
+        x86dump(fn, "ImpAdCallI2");
+    }
+}
+
 H(FnInStr4)
 {
     REPORT("FnInStr4 %Z %Z %u", esp[1], esp[2], esp[3]);
@@ -129,6 +147,8 @@ static struct _hooks_t {
     HOOK(NeStr),
     HOOK(LitStr),
     HOOK(MemLdStr),
+    HOOK(ImpAdCallFPR4),
+    HOOK(ImpAdCallI2),
     HOOK(FnInStr4),
     HOOK(FnInStr4Var),
     HOOK(CStr2Uni),
