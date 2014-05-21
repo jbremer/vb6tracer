@@ -35,6 +35,7 @@ H(ImpAdCallFPR4)
     uint8_t *fn = *(uint8_t **)(ebp[-0x54/4] + *(uint16_t *) esi * 4);
     REPORT("ImpAdCallI2 fn 0x%x", fn);
     if(fn != NULL) {
+        native(fn);
         x86dump(fn, "ImpAdCallFPR4");
     }
 }
@@ -44,8 +45,37 @@ H(ImpAdCallI2)
     uint8_t *fn = *(uint8_t **)(ebp[-0x54/4] + *(uint16_t *) esi * 4);
     REPORT("ImpAdCallI2 fn 0x%x", fn);
     if(fn != NULL) {
+        native(fn);
         x86dump(fn, "ImpAdCallI2");
     }
+}
+
+H(VCallHresult)
+{
+    const uint8_t *fn =
+        *(uint8_t **)(*(uint32_t *) ebp[-0x4c/4] + *(uint16_t *) esi);
+    REPORT("VCallHresult fn 0x%x", fn);
+    if(fn != NULL) {
+        native(fn);
+        x86dump(fn, "VCallHresult");
+    }
+}
+
+H(ThisVCallHresult)
+{
+    uint8_t *fn = *(uint8_t **)(*(uint32_t *) ebp[8/4] + *(uint16_t *) esi);
+    REPORT("ThisVCallHresult fn 0x%x", fn);
+    if(fn != NULL) {
+        native(fn);
+        x86dump(fn, "ThisVCallHresult");
+    }
+}
+
+H(ImpAdCallCbFrame)
+{
+    const uint8_t *fn =
+        *(uint8_t **)(ebp[-0x54/4] + *((uint16_t *) esi + 1) * 4);
+    REPORT("ImpAdCallCbFrame fn 0x%x", fn);
 }
 
 H(FnInStr4)
@@ -133,6 +163,16 @@ H(LitI4)
     REPORT("LitI4 0x%x %u", esi[0], esi[0]);
 }
 
+H(LitI2_Byte)
+{
+    REPORT("LitI2_Byte %u", (uint16_t)(signed char) *esi);
+}
+
+H(LitVarI2)
+{
+    REPORT("LitVarI2 %u", *((uint16_t *) esi + 1));
+}
+
 #define HOOK(fn) {#fn, _pre_##fn}
 
 static struct _hooks_t {
@@ -149,6 +189,9 @@ static struct _hooks_t {
     HOOK(MemLdStr),
     HOOK(ImpAdCallFPR4),
     HOOK(ImpAdCallI2),
+    HOOK(VCallHresult),
+    HOOK(ThisVCallHresult),
+    HOOK(ImpAdCallCbFrame),
     HOOK(FnInStr4),
     HOOK(FnInStr4Var),
     HOOK(CStr2Uni),
@@ -161,6 +204,8 @@ static struct _hooks_t {
     HOOK(MemStStrCopy),
     HOOK(XorVar),
     HOOK(LitI4),
+    HOOK(LitI2_Byte),
+    HOOK(LitVarI2),
 };
 
 int vb6_set_hooks()

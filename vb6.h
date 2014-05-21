@@ -67,6 +67,11 @@ void hexdump(const void *addr, int length, const char *msg);
 
 // x86dump.c
 
+const char *symbol(const uint8_t *addr);
 void x86dump(const uint8_t *addr, const char *msg);
+
+// native.c
+
+int native(const uint8_t *fn);
 
 #endif

@@ -14,7 +14,7 @@ static const uint8_t *_module_from_address(const uint8_t *addr)
     return addr;
 }
 
-static const char *_exported_function(const uint8_t *addr)
+const char *symbol(const uint8_t *addr)
 {
     const uint8_t *mod; static char name[MAX_PATH+32];
 
@@ -79,11 +79,11 @@ void x86dump(const uint8_t *addr, const char *msg)
 
         if(*addr == 0xe8) {
             const uint8_t *fn = addr + *(const uint32_t *)(addr + 1) + 5;
-            sprintf(extra, "; 0x%p %s", fn, _exported_function(fn));
+            sprintf(extra, "; 0x%p %s", fn, symbol(fn));
         }
         else if(*addr == 0xff && addr[1] == 0x25) {
             const uint8_t *fn = **(const uint8_t ***)(addr + 2);
-            sprintf(extra, "; 0x%p %s", fn, _exported_function(fn));
+            sprintf(extra, "; 0x%p %s", fn, symbol(fn));
         }
 
         char hex[33];

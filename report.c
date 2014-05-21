@@ -142,7 +142,7 @@ static int _report_variant(char **out, const VARIANT *v)
         if(v->bstrVal == NULL) return _report_ascii(out, "<null>", 6, 0);
 
         len = *(int *)((uint8_t *) v->bstrVal - sizeof(int));
-        return _report_unicode(out, v->bstrVal, len, 1);
+        return _report_unicode(out, v->bstrVal, len >> 1, 1);
 
     case VT_VARIANT:
         return _report_variant(out, v->pvarVal);
