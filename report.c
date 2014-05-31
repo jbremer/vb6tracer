@@ -276,8 +276,16 @@ void report(const char *fmt, ...)
         _report_sprintf(buf, fmt, args);
         va_end(args);
 
+        static CRITICAL_SECTION cs; static int init = 0;
+        if(init == 0) {
+            InitializeCriticalSection(&cs);
+            init = 1;
+        }
+
+        EnterCriticalSection(&cs);
         fwrite(buf, 1, len, g_fp);
         fflush(g_fp);
+        LeaveCriticalSection(&cs);
     }
 }
 
@@ -288,12 +296,15 @@ void hexdump(const void *addr, int length, const char *msg)
 
     const uint8_t *ptr = (const uint8_t *) addr; char buf[128];
     for (uint32_t offset = 0; length > 0; offset += 16, length -= 16) {
+        memset(buf, ' ', sizeof(buf));
         sprintf(buf, "%04x  ", offset);
-        for (int i = 0; i < 16; i++) {
+        for (int i = 0; i < (length > 16 ? 16 : length); i++, ptr++) {
             sprintf(buf + i * 3 + 6 + (i > 7), "%02x ", *ptr);
-            buf[16 * 3 + 9 + i] = *ptr++;
+            buf[i * 3 + 9 + (i > 7)] = ' ';
+            buf[16 * 3 + 9 + i] = *ptr >= 0x20 && *ptr < 0x7e ? *ptr : '.';
         }
-        buf[16 * 4 + 9] = 0;
+        buf[8 * 3 + 6] = buf[16 * 3 + 7] = buf[16 * 3 + 8] = ' ';
+        buf[16 * 4 + 7] = 0;
         report("%z", buf);
     }
 }
