@@ -312,6 +312,8 @@ void hexdump(const void *addr, int length, const char *msg)
     report("[x] Hexdump 0x%x..0x%x: %z",
         addr, (uintptr_t) addr + length, msg);
 
+    if(length > 0x1000) length = 0x1000;
+
     const uint8_t *ptr = (const uint8_t *) addr; char buf[128];
     for (uint32_t offset = 0; length > 0; offset += 16, length -= 16) {
         memset(buf, ' ', sizeof(buf));

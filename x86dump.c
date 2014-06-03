@@ -103,6 +103,12 @@ void x86dump(const uint8_t *addr, const char *msg)
             const uint8_t *fn = **(const uint8_t ***)(addr + 2);
             sprintf(extra, "; 0x%p %s", fn, symbol(fn));
         }
+        // b879e0817c   MOV EAX, 0x7c81e079
+        // ffd0         CALL EAX
+        else if(*addr == 0xb8 && addr[5] == 0xff && addr[6] == 0xd0) {
+            const uint8_t *fn = *(const uint8_t **)(addr + 1);
+            sprintf(extra, "; 0x%p %s", fn, symbol(fn));
+        }
 
         char hex[33];
         sprintf(hex, "%-12s", ins.instructionHex.p);

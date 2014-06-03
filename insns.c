@@ -138,8 +138,8 @@ H(LitStr)
 
 H(MemLdStr)
 {
-    const wchar_t *s = *(const wchar_t **)(ebp[-0x4c/4] + *(uint16_t *) esi);
-    REPORT("MemLdStr %b", s);
+    // const wchar_t *s = *(const wchar_t **)(ebp[-0x4c/4] + *(uint16_t *) esi);
+    REPORT("MemLdStr");
 }
 
 H(IStStr)
