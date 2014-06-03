@@ -67,5 +67,4 @@ VB6Tracer is licensed under GPLv3.
 Authors
 -------
 
-Jurriaan Bremer
-Marion Marschalek
+Jurriaan Bremer, Marion Marschalek.
