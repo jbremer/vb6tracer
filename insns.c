@@ -52,8 +52,7 @@ H(ImpAdCallFPR4)
 {
     uint8_t *fn = *(uint8_t **)(ebp[-0x54/4] + *(uint16_t *) esi * 4);
     REPORT("ImpAdCallI2 fn 0x%x", fn);
-    if(fn != NULL) {
-        native(fn);
+    if(fn != NULL && native(fn) < 0) {
         x86dump(fn, "ImpAdCallFPR4");
     }
 }
@@ -62,8 +61,7 @@ H(ImpAdCallI2)
 {
     uint8_t *fn = *(uint8_t **)(ebp[-0x54/4] + *(uint16_t *) esi * 4);
     REPORT("ImpAdCallI2 fn 0x%x", fn);
-    if(fn != NULL) {
-        native(fn);
+    if(fn != NULL && native(fn) < 0) {
         x86dump(fn, "ImpAdCallI2");
     }
 }
@@ -73,8 +71,7 @@ H(VCallHresult)
     const uint8_t *fn =
         *(uint8_t **)(*(uint32_t *) ebp[-0x4c/4] + *(uint16_t *) esi);
     REPORT("VCallHresult fn 0x%x", fn);
-    if(fn != NULL) {
-        native(fn);
+    if(fn != NULL && native(fn) < 0) {
         x86dump(fn, "VCallHresult");
     }
 }
@@ -83,8 +80,7 @@ H(ThisVCallHresult)
 {
     uint8_t *fn = *(uint8_t **)(*(uint32_t *) ebp[8/4] + *(uint16_t *) esi);
     REPORT("ThisVCallHresult fn 0x%x", fn);
-    if(fn != NULL) {
-        native(fn);
+    if(fn != NULL && native(fn) < 0) {
         x86dump(fn, "ThisVCallHresult");
     }
 }
