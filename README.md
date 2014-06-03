@@ -2,7 +2,11 @@ VB6 Tracer
 ==========
 
 VB6Tracer is a tool designed to instrument the Visual Basic 6 Virtual Machine
-in order to analyze VB6 P-Code applications at runtime.
+in order to analyze VB6 P-Code applications at runtime. For a high-level
+overview of our tool including the goals, approach, and results, you can
+refer to our [Area41](http://area41.io/) [presentation][].
+
+[presentation]: https://github.com/jbremer/vb6tracer/raw/master/presentation/area41.pdf
 
 Usage
 -----
