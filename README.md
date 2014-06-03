@@ -35,6 +35,8 @@ two steps involved.
 
 * Overwrite Cuckoo's monitor DLL with vb6tracer.dll
   * Copy vb6tracer.dll to `$CUCKOO/analyzer/windows/dll/cuckoomon.dll`
+  * Either take `vb6tracer-generic.dll` or `vb6tracer-specific.dll` from
+    the `dll/` directory (see als the `Compilation` section.)
 * Modify Cuckoo to not randomize pipe names in the Guest.
   * Open `$CUCKOO/analyzer/windows/lib/common/constants.py`
   * Replace the `PIPE =` line by `PIPE = "\\\\.\\PIPE\\cuckoo"`
