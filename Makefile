@@ -6,7 +6,7 @@ DIRS = -Idistorm3.2-package/include
 DISTORM3 = $(wildcard distorm3.2-package/src/*.c)
 DISTORM3OBJ = $(DISTORM3:.c=.o)
 
-SRCS = $(wildcard *.c)
+SRCS = $(wildcard src/*.c)
 OBJS = $(SRCS:.c=.o)
 
 TOOLS = vb6tracer.dll utils/dllinject.exe utils/hello.exe

@@ -20,8 +20,8 @@
 #include <stdint.h>
 #include <windows.h>
 #include "vb6.h"
-#include "distorm3.2-package/include/distorm.h"
-#include "distorm3.2-package/include/mnemonics.h"
+#include "distorm.h"
+#include "mnemonics.h"
 
 static const uint8_t *_module_from_address(const uint8_t *addr)
 {
