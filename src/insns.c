@@ -26,7 +26,7 @@
     static void _pre_##mnemonic(uint32_t *esp, uint32_t *ebp, uint32_t *esi)
 
 #define REPORT(fmt, ...) \
-    (void) esp; (void) ebp; report("%x " fmt, esi, ##__VA_ARGS__)
+    (void) esp; (void) ebp; report("%x " fmt, esi - 1, ##__VA_ARGS__)
 
 H(OpenFile)
 {

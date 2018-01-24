@@ -47,11 +47,11 @@ static int _generic_pre(uint32_t eax, uint32_t *esp,
 
     switch (eax) {
     case 0xfb: case 0xfc: case 0xfd: case 0xfe: case 0xff:
-        report("%x %z", esi, vb6_tables[eax - 0xfb][*esi & 0xff].mnemonic);
+        report("%x %z", esi - 1, vb6_tables[eax - 0xfb][*esi & 0xff].mnemonic);
         break;
 
     default:
-        report("%x %z", esi, vb6_table_00[eax].mnemonic);
+        report("%x %z", esi - 1, vb6_table_00[eax].mnemonic);
         break;
     }
     return 0;
